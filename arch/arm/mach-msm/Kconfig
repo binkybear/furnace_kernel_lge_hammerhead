@@ -1924,6 +1924,18 @@ config INTELLI_PLUG
 	help
 	  Generic Intelli-plug cpu hotplug driver for ARM SOCs
 
+config CPU_OVERCLOCK
+	bool "Enable CPU Overclocking"
+	default n
+	help
+	  Krait overclocking
+
+config CPU_UNDERCLOCK
+	bool "Enable CPU Underclocking"
+	default n
+	help
+	  Krait underclocking
+
 config MSM_AVS_HW
 	bool "Enable Adaptive Voltage Scaling (AVS)"
 	default n
