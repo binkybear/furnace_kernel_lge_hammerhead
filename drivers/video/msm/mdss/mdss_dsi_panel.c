@@ -26,6 +26,7 @@
 #include <linux/ctype.h>
 #endif
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+#include <linux/input/prevent_sleep.h>
 #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
 #include <linux/input/sweep2wake.h>
 #endif
@@ -33,13 +34,20 @@
 #include <linux/input/doubletap2wake.h>
 #endif
 #endif
+#ifdef CONFIG_PWRKEY_SUSPEND
+#include <linux/qpnp/power-on.h>
+#endif
+#include "mdss_dsi.h"
 
 #include <asm/system_info.h>
 
-#include "mdss_dsi.h"
-
 #define DT_CMD_HDR 6
 #define GAMMA_COMPAT 11
+
+//Basic color preset
+int color_preset = 0;
+module_param(color_preset, int, 0755);
+
 
 static bool mdss_panel_flip_ud = false;
 static int mdss_panel_id = PANEL_QCOM;
@@ -54,6 +62,8 @@ static struct mdss_dsi_phy_ctrl phy_params;
 static struct mdss_panel_common_pdata *local_pdata;
 static struct work_struct send_cmds_work;
 struct mdss_panel_data *cmds_panel_data;
+static struct platform_driver this_driver;
+struct kobject *module_kobj;
 
 void mdss_dsi_panel_pwm_cfg(struct mdss_dsi_ctrl_pdata *ctrl)
 {
@@ -188,12 +198,19 @@ void mdss_dsi_panel_reset(struct mdss_panel_data *pdata, int enable)
 	bool prevent_sleep = false;
 #endif
 #if defined(CONFIG_TOUCHSCREEN_SWEEP2WAKE)
-	prevent_sleep = (s2w_switch > 0) && (s2w_s2sonly == 0);
+	prevent_sleep = (s2w_switch == 1);
 #endif
 #if defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
 	prevent_sleep = prevent_sleep || (dt2w_switch > 0);
 #endif
+	if (prevent_sleep && in_phone_call)
+		prevent_sleep = false;
 #endif
+#ifdef CONFIG_PWRKEY_SUSPEND
+	if (pwrkey_pressed)
+		prevent_sleep = false;
+#endif
+
 	if (pdata == NULL) {
 		pr_err("%s: Invalid input data\n", __func__);
 		return;
@@ -322,8 +339,18 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 
 	pr_debug("%s: ctrl=%p ndx=%d\n", __func__, ctrl, ctrl->ndx);
 
+//Basic color preset 
+	if (color_preset == 1)
+		local_pdata->on_cmds.cmds[1].payload[0] = 0x77;
+	else
+		local_pdata->on_cmds.cmds[1].payload[0] = 0xFF;
+
 	if (local_pdata->on_cmds.cmd_cnt)
 		mdss_dsi_panel_cmds_send(ctrl, &local_pdata->on_cmds);
+
+#ifdef CONFIG_PWRKEY_SUSPEND
+	pwrkey_pressed = false;	
+#endif
 
 	pr_info("%s\n", __func__);
 	return 0;
@@ -338,12 +365,19 @@ static int mdss_dsi_panel_off(struct mdss_panel_data *pdata)
 	bool prevent_sleep = false;
 #endif
 #if defined(CONFIG_TOUCHSCREEN_SWEEP2WAKE)
-	prevent_sleep = (s2w_switch > 0) && (s2w_s2sonly == 0);
+	prevent_sleep = (s2w_switch == 1);
 #endif
 #if defined(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)
 	prevent_sleep = prevent_sleep || (dt2w_switch > 0);
 #endif
+	if (prevent_sleep && in_phone_call)
+		prevent_sleep = false;
 #endif
+#ifdef CONFIG_PWRKEY_SUSPEND
+	if (pwrkey_pressed)
+		prevent_sleep = false;
+#endif
+
 	if (pdata == NULL) {
 		pr_err("%s: Invalid input data\n", __func__);
 		return -EINVAL;
@@ -1295,7 +1329,7 @@ static struct attribute *dsi_panel_attributes[] = {
 };
 
 static struct attribute_group dsi_panel_attribute_group = {
-	.attrs = dsi_panel_attributes
+	.attrs = dsi_panel_attributes,
 };
 
 /**************************** sysfs end **************************/
@@ -1305,6 +1339,7 @@ static int __devinit mdss_dsi_panel_probe(struct platform_device *pdev)
 	int rc = 0;
 	static struct mdss_panel_common_pdata vendor_pdata;
 	static const char *panel_name;
+	const char *driver_name = this_driver.driver.name;
 
 	pr_debug("%s:%d, debug info id=%d", __func__, __LINE__, pdev->id);
 	if (!pdev->dev.of_node)
@@ -1339,7 +1374,13 @@ static int __devinit mdss_dsi_panel_probe(struct platform_device *pdev)
 	debug_fs_init(&vendor_pdata);
 #endif
 
-	rc = sysfs_create_group(&pdev->dev.kobj, &dsi_panel_attribute_group);
+	module_kobj = kobject_create_and_add(driver_name, &module_kset->kobj);
+	if (!module_kobj) {
+		pr_err("%s: kobject create failed\n", driver_name);
+		return -ENOMEM;
+	}
+
+	rc = sysfs_create_group(module_kobj, &dsi_panel_attribute_group);
 	if (rc)
 		pr_err("%s: sysfs create failed: %d\n", panel_name, rc);
 
