@@ -750,7 +750,7 @@ static void dwc3_otg_sm_work(struct work_struct *w)
 					break;
 				case DWC3_SDP_CHARGER:
 					dwc3_otg_set_power(phy,
-							DWC3_DEV_CHG_MIN);
+							DWC3_IDEV_CHG_MIN);
 					if (!slimport_is_connected()) {
 						dwc3_otg_start_peripheral(
 								&dotg->otg,
