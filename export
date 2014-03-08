@@ -57,6 +57,11 @@ if [ -f arch/arm/boot/"$kerneltype" ]; then
 	rm -rf ozip/system
 	mkdir -p ozip/system/lib/modules
 	find . -name "*.ko" -exec cp {} ozip/system/lib/modules \;
+	if [ -f ozip/system/lib/modules/*.ko ]; then
+		echo "Modules added - Add to updater-script if needed"
+	else
+		rm -rf ozip/system
+	fi
 else
 	echo "Nothing has been made..."
 	read -p "Clean working directory..(y/n)? : " achoice
