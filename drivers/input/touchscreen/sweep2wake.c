@@ -146,7 +146,7 @@ static void detect_sweep2wake(int x, int y, bool st)
         pr_info(LOGTAG"x,y(%4d,%4d) single:%s\n",
                 x, y, (single_touch) ? "true" : "false");
 #endif
-	//left->right
+	// s2w: left->right
 	if ((single_touch) && (scr_suspended == true) && (s2w_switch == 1)) {
 		prevx = 0;
 		nextx = S2W_X_B1;
@@ -166,6 +166,34 @@ static void detect_sweep2wake(int x, int y, bool st)
 				if ((x > prevx) &&
 				    (y > 0)) {
 					if (x > (S2W_X_MAX - S2W_X_FINAL)) {
+						if (exec_count) {
+							pr_info(LOGTAG"ON\n");
+							sweep2wake_pwrtrigger();
+							exec_count = false;
+						}
+					}
+				}
+			}
+		}
+		// s2w: right->left
+		r_prevx = (S2W_X_MAX - S2W_X_FINAL);
+		r_nextx = S2W_X_B2;
+		if ((r_barrier[0] == true) ||
+		   ((x < r_prevx) &&
+		    (x > r_nextx) &&
+		    (y < S2W_Y_MAX))) {
+			r_prevx = r_nextx;
+			r_nextx = S2W_X_B1;
+			r_barrier[0] = true;
+			if ((r_barrier[1] == true) ||
+			   ((x < r_prevx) &&
+			    (x > r_nextx) &&
+			    (y < S2W_Y_MAX))) {
+				r_prevx = r_nextx;
+				r_barrier[1] = true;
+				if ((x < r_prevx) &&
+				    (y < S2W_Y_MAX)) {
+					if (x < S2W_X_FINAL) {
 						if (exec_count) {
 							pr_info(LOGTAG"ON\n");
 							sweep2wake_pwrtrigger();
