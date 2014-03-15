@@ -274,7 +274,7 @@ static int max17048_check_recharge(struct max17048_chip *chip)
 
 	chg_status = max17048_get_prop_status(chip);
 #ifdef CONFIG_BLX
-	if (chip->capacity_level <= blx_max &&
+	if (chip->capacity_level <= blx_max-1 &&
 #else
 	if (chip->capacity_level <= 99 &&
 #endif
