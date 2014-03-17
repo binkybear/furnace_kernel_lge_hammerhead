@@ -163,6 +163,9 @@ void __init msm8974_add_drivers(void)
 	krait_power_init();
 	msm_clock_init(&msm8974_clock_init_data);
 	tsens_tm_init_driver();
+#ifdef CONFIG_LGE_DIAG_ENABLE_SYSFS
+	lge_add_diag_devices();
+#endif
 #ifndef CONFIG_INTELLI_THERMAL
 	msm_thermal_device_init();
 #endif
