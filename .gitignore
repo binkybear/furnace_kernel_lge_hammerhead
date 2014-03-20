@@ -81,6 +81,7 @@ GRTAGS
 GSYMS
 GTAGS
 
+ozip/kernel/zImage-dtb
 *.orig
 *~
 \#*#
