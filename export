@@ -5,7 +5,7 @@
 # the appropriate lines for dtbTool to compile it, if not prebuilt.
 build=/home/savoca/furnace_output/hammerhead
 kernel="furnace"
-version="1.0.6"
+version="1.0.6-F2FS"
 rom="aosp"
 variant="hammerhead"
 ramdisk=ramdisk
@@ -24,15 +24,16 @@ rm -rf out
 mkdir out
 mkdir out/tmp
 echo "Checking for build..."
-if [ -f ozip/kernel/"$kerneltype" ]; then
+if [ -f ozip/boot.img ]; then
 	read -p "Previous build found, clean working directory..(y/n)? : " cchoice
 	case "$cchoice" in
 		y|Y )
 			export ARCH=arm
 			export CROSS_COMPILE=$toolchain/"$toolchain2"
+			echo "  CLEAN   ozip"
 			rm -rf ozip/boot.img
 			rm -rf arch/arm/boot/"$kerneltype"
-			# mkdir -p ozip/system/lib/modules
+			mkdir -p ozip/system/lib/modules
 			make clean && make mrproper
 			echo "Working directory cleaned...";;
 		n|N )
@@ -70,9 +71,12 @@ else
 		y|Y )
 			export ARCH=arm
 			export CROSS_COMPILE=$toolchain/"$toolchain2"
-			rm -rf ozip/kernel/"$kerneltype"
+			if [ -f arch/arm/boot/"$kerneltype" ]; then
+				echo "  CLEAN   ozip"
+			fi
+			rm -rf ozip/boot.img
 			rm -rf arch/arm/boot/"$kerneltype"
-			# mkdir -p ozip/system/lib/modules
+			mkdir -p ozip/system/lib/modules
 			make clean && make mrproper
 			echo "Working directory cleaned...";;
 		n|N )
@@ -114,6 +118,6 @@ cd ozip
 zip -r ../"$kernel"-$version-"$rom"_"$variant".zip .
 mv ../"$kernel"-$version-"$rom"_"$variant".zip $build
 cd ..
-rm -rf out ramdisk.gz ozip/boot.img ozip/system
+rm -rf out ramdisk.gz ozip/system
 echo "Done..."
 # Export script by Savoca
