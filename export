@@ -14,12 +14,12 @@ toolchain2="arm-eabi-"
 config="hammerhead_defconfig"
 kerneltype="zImage-dtb"
 jobcount="-j4"
+ps=2048
 base=0x00000000
 ramdisk_offset=0x02900000
 tags_offset=0x02700000
-cmdline="console=ttyHSL0,115200,n8 androidboot.hardware=hammerhead user_debug=31 msm_watchdog_v2.enable=1"
+cmdline="console=ttyHSL0,115200,n8 androidboot.hardware=hammerhead user_debug=31 maxcpus=2 msm_watchdog_v2.enable=1"
 
-# Begin commands
 rm -rf out
 mkdir out
 mkdir out/tmp
@@ -30,7 +30,7 @@ if [ -f ozip/kernel/"$kerneltype" ]; then
 		y|Y )
 			export ARCH=arm
 			export CROSS_COMPILE=$toolchain/"$toolchain2"
-			rm -rf ozip/kernel/"$kerneltype"
+			rm -rf ozip/boot.img
 			rm -rf arch/arm/boot/"$kerneltype"
 			# mkdir -p ozip/system/lib/modules
 			make clean && make mrproper
@@ -52,8 +52,9 @@ if [ -f ozip/kernel/"$kerneltype" ]; then
 			echo "Invalid...";;
 	esac
 fi
+echo "Extracting files..."
 if [ -f arch/arm/boot/"$kerneltype" ]; then
-	cp arch/arm/boot/"$kerneltype" ozip/kernel
+	cp arch/arm/boot/"$kerneltype" out
 	rm -rf ozip/system
 	mkdir -p ozip/system/lib/modules
 	find . -name "*.ko" -exec cp {} ozip/system/lib/modules \;
@@ -92,11 +93,27 @@ else
 	esac
 fi
 
+echo "Making ramdisk..."
+if [ -d $ramdisk ]; then
+	mkbootfs $ramdisk | gzip > out/ramdisk.gz
+else
+	echo "No ramdisk found..."
+	exit 0;
+fi
+
+echo "Making boot.img..."
+if [ -f out/"$kerneltype" ]; then
+	mkbootimg --kernel out/"$kerneltype" --ramdisk out/ramdisk.gz --cmdline "$cmdline" --base $base --pagesize $ps --ramdisk_offset $ramdisk_offset --tags_offset $tags_offset -o ozip/boot.img
+else
+	echo "No $kerneltype found..."
+	exit 0;
+fi
+
 echo "Zipping..."
 cd ozip
 zip -r ../"$kernel"-$version-"$rom"_"$variant".zip .
 mv ../"$kernel"-$version-"$rom"_"$variant".zip $build
 cd ..
-rm -rf out
+rm -rf out ramdisk.gz ozip/boot.img ozip/system
 echo "Done..."
 # Export script by Savoca
