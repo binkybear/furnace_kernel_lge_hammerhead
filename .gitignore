@@ -82,6 +82,7 @@ GSYMS
 GTAGS
 
 ozip/kernel/zImage-dtb
+ozip/boot.img
 *.orig
 *~
 \#*#
