@@ -77,6 +77,14 @@ choice
 	prompt "MSM Thermal Monitor Types"
 	default THERMAL_MONITOR
 
+config FURNACE_THERMAL
+	bool "Furnace Thermal Control (FTM) for MSM"
+	depends on THERMAL_TSENS8960 || THERMAL_TSENS8974
+	depends on CPU_FREQ_MSM
+	help
+	  Monitors TSENS and battery  temperature and limits the max
+	  frequency of the cores.
+
 config INTELLI_THERMAL
 	bool "Better thermal monitor for MSM"
 	depends on THERMAL_TSENS8960 || THERMAL_TSENS8974
