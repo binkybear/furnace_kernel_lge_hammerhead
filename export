@@ -5,11 +5,11 @@
 # the appropriate lines for dtbTool to compile it, if not prebuilt.
 build=/home/savoca/furnace_output/hammerhead
 kernel="furnace"
-version="1.0.7"
+version="1.0.8"
 rom="aosp"
 variant="hammerhead"
 ramdisk=ramdisk
-toolchain=/home/savoca/toolchains/arm-eabi-4.7/bin/
+toolchain=/home/savoca/toolchains/android-toolchain-eabi/bin/
 toolchain2="arm-eabi-"
 config="hammerhead_defconfig"
 kerneltype="zImage-dtb"
