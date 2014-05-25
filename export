@@ -3,17 +3,17 @@
 # Final zip will exist in "build" as "furnace-1.0.0-aosp_hammerhead.zip" for example
 # If you are using a non-appended dt.image, you will need to add "--dt path/to/dt.img" and
 # the appropriate lines for dtbTool to compile it, if not prebuilt.
-build=/home/savoca/furnace_output/hammerhead
+build=/home/savoca/downloads/furnace/hammerhead/aosp/
 kernel="furnace"
-version="1.0.8"
+version="1.1.0"
 rom="aosp"
 variant="hammerhead"
 ramdisk=ramdisk
-toolchain=/home/savoca/toolchains/android-toolchain-eabi/bin/
+toolchain=/home/savoca/storage/toolchains/android-toolchain-eabi/bin/
 toolchain2="arm-eabi-"
 config="hammerhead_defconfig"
 kerneltype="zImage-dtb"
-jobcount="-j4"
+jobcount="-j$(grep -c ^processor /proc/cpuinfo)"
 ps=2048
 base=0x00000000
 ramdisk_offset=0x02900000
