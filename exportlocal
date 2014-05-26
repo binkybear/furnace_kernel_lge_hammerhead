@@ -1,0 +1,123 @@
+#!/bin/bash
+# If you're using my script, all you need to do is edit the following lines to work for you.
+# Final zip will exist in "build" as "furnace-1.0.0-aosp_hammerhead.zip" for example
+# If you are using a non-appended dt.image, you will need to add "--dt path/to/dt.img" and
+# the appropriate lines for dtbTool to compile it, if not prebuilt.
+build=/home/savoca/Desktop/
+kernel="furnace"
+version="1.1.0"
+rom="aosp"
+variant="hammerhead"
+ramdisk=ramdisk
+toolchain=/home/savoca/toolchains/android-toolchain-eabi/bin/
+toolchain2="arm-eabi-"
+config="hammerhead_defconfig"
+kerneltype="zImage-dtb"
+jobcount="-j$(grep -c ^processor /proc/cpuinfo)"
+ps=2048
+base=0x00000000
+ramdisk_offset=0x02900000
+tags_offset=0x02700000
+cmdline="console=ttyHSL0,115200,n8 androidboot.hardware=hammerhead user_debug=31 maxcpus=4 msm_watchdog_v2.enable=1"
+
+rm -rf out
+mkdir out
+mkdir out/tmp
+echo "Checking for build..."
+if [ -f ozip/boot.img ]; then
+	read -p "Previous build found, clean working directory..(y/n)? : " cchoice
+	case "$cchoice" in
+		y|Y )
+			export ARCH=arm
+			export CROSS_COMPILE=$toolchain/"$toolchain2"
+			echo "  CLEAN   ozip"
+			rm -rf ozip/boot.img
+			rm -rf arch/arm/boot/"$kerneltype"
+			mkdir -p ozip/system/lib/modules
+			make clean && make mrproper
+			echo "Working directory cleaned...";;
+		n|N )
+			exit 0;;
+		* )
+			echo "Invalid...";;
+	esac
+	read -p "Begin build now..(y/n)? : " dchoice
+	case "$dchoice" in
+		y|Y)
+			make "$config"
+			make "$jobcount"
+			exit 0;;
+		n|N )
+			exit 0;;
+		* )
+			echo "Invalid...";;
+	esac
+fi
+echo "Extracting files..."
+if [ -f arch/arm/boot/"$kerneltype" ]; then
+	cp arch/arm/boot/"$kerneltype" out
+	rm -rf ozip/system
+	mkdir -p ozip/system/lib/modules
+	find . -name "*.ko" -exec cp {} ozip/system/lib/modules \;
+	if [ -f ozip/system/lib/modules/*.ko ]; then
+		echo "Modules added - Add to updater-script if needed"
+	else
+		rm -rf ozip/system
+	fi
+else
+	echo "Nothing has been made..."
+	read -p "Clean working directory..(y/n)? : " achoice
+	case "$achoice" in
+		y|Y )
+			export ARCH=arm
+			export CROSS_COMPILE=$toolchain/"$toolchain2"
+			if [ -f arch/arm/boot/"$kerneltype" ]; then
+				echo "  CLEAN   ozip"
+			fi
+			rm -rf ozip/boot.img
+			rm -rf arch/arm/boot/"$kerneltype"
+			mkdir -p ozip/system/lib/modules
+			make clean && make mrproper
+			echo "Working directory cleaned...";;
+		n|N )
+			exit 0;;
+		* )
+			echo "Invalid...";;
+	esac
+	read -p "Begin build now..(y/n)? : " bchoice
+	case "$bchoice" in
+		y|Y)
+			make "$config"
+			make "$jobcount"
+			exit 0;;
+		n|N )
+			exit 0;;
+		* )
+			echo "Invalid...";;
+	esac
+fi
+
+echo "Making ramdisk..."
+if [ -d $ramdisk ]; then
+	mkbootfs $ramdisk | gzip > out/ramdisk.gz
+else
+	echo "No ramdisk found..."
+	exit 0;
+fi
+
+echo "Making boot.img..."
+if [ -f out/"$kerneltype" ]; then
+	mkbootimg --kernel out/"$kerneltype" --ramdisk out/ramdisk.gz --cmdline "$cmdline" --base $base --pagesize $ps --ramdisk_offset $ramdisk_offset --tags_offset $tags_offset -o ozip/boot.img
+else
+	echo "No $kerneltype found..."
+	exit 0;
+fi
+
+echo "Zipping..."
+cd ozip
+zip -r ../"$kernel"-$version-"$rom"_"$variant".zip .
+mv ../"$kernel"-$version-"$rom"_"$variant".zip $build
+cd ..
+rm -rf out ramdisk.gz ozip/system
+echo "Done..."
+# Export script by Savoca
