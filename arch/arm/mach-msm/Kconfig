@@ -284,6 +284,7 @@ config ARCH_MSM8974
 	select MSM_ULTRASOUND_B
 	select MSM_RPM_LOG
 	select ARCH_WANT_KMAP_ATOMIC_FLUSH
+	select HAS_MACH_MEMUTILS
 
 config ARCH_APQ8084
 	bool "APQ8084"
@@ -3110,5 +3111,11 @@ config MSM_MPDEC
 	help
 	  This enables kernel based multi core control.
 	  (up/down hotplug based on load)
+
+config HAS_MACH_MEMUTILS
+	default n
+	bool "Motorola MSM memcpy enhancements"
+	help
+	Faster memcpy performance for Krait
 
 endif
