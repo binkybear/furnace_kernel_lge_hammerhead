@@ -47,7 +47,7 @@ static unsigned int busy_persist_count = 0;
 static bool hotplug_suspended = false;
 
 /* HotPlug Driver controls */
-static atomic_t intelli_plug_active = ATOMIC_INIT(0);
+static atomic_t intelli_plug_active = ATOMIC_INIT(1);
 static unsigned int eco_mode_active = 0;
 static unsigned int strict_mode_active = 0;
 
@@ -334,6 +334,8 @@ static void __ref intelli_plug_resume(struct power_suspend *handler)
 			cpu_up(i);
 		}
 	}
+	queue_delayed_work_on(0, intelliplug_wq, &intelli_plug_work,
+		msecs_to_jiffies(10));
 }
 
 static struct power_suspend intelli_plug_power_suspend_driver = {
