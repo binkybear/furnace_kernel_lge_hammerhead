@@ -5,7 +5,7 @@
 # the appropriate lines for dtbTool to compile it, if not prebuilt.
 build=/home/savoca/Desktop/
 kernel="furnace"
-version="1.1.0"
+version="1.1.3"
 rom="aosp"
 variant="hammerhead"
 ramdisk=ramdisk
