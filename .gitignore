@@ -86,3 +86,9 @@ ozip/boot.img
 *.orig
 *~
 \#*#
+
+# Extras
+
+ozip/boot/zImage
+ozip/boot/zImage-dtb
+ozip/boot/dt.img

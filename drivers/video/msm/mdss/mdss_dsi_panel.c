@@ -49,6 +49,95 @@
 #define DT_CMD_HDR 6
 #define GAMMA_COMPAT 11
 
+/* START Furnace Gamma - RGB Profiling */
+
+static unsigned int display_init = 0;
+module_param(display_init, uint, 0644);
+
+static unsigned int gamma_profile = 0;
+module_param(gamma_profile, uint, 0644);
+
+static uint32_t kcal_profile_r = 255;
+module_param(kcal_profile_r, uint, 0644);
+static uint32_t kcal_profile_g = 255;
+module_param(kcal_profile_g, uint, 0644);
+static uint32_t kcal_profile_b = 255;
+module_param(kcal_profile_b, uint, 0644);
+
+static int __init mdss_panel_read_gamma(char *gamma)
+{
+	if (strcmp(gamma, "stock") == 0) {
+		gamma_profile = 0;
+	} else if (strcmp(gamma, "TrueRGB") == 0){
+		gamma_profile = 1;
+	} else if (strcmp(gamma, "Yorici_v3") == 0){
+		gamma_profile = 2;
+	} else if (strcmp(gamma, "faux123") == 0){
+		gamma_profile = 3;
+	} else if (strcmp(gamma, "perfect") == 0){
+		gamma_profile = 4;
+	} else if (strcmp(gamma, "vomer") == 0){
+		gamma_profile = 5;
+	} else if (strcmp(gamma, "TGM") == 0){	
+		gamma_profile = 6;
+	} else {
+		gamma_profile = 0;
+	}
+
+	return 0;
+}
+__setup("gamma=", mdss_panel_read_gamma);
+
+static int __init mdss_panel_read_kcal_r(char *kcal_r)
+{
+	unsigned long kcal;
+	int ret;
+	ret = strict_strtoul(kcal_r, 0, &kcal);
+	if (ret) {
+		printk(KERN_INFO "[furnace]: kcal_r='%lu'\n", kcal);
+		return 1;
+	}
+
+	kcal_profile_r = kcal;
+
+	return 0;
+}
+__setup("kcal_r=", mdss_panel_read_kcal_r);
+
+static int __init mdss_panel_read_kcal_g(char *kcal_g)
+{
+	unsigned long kcal;
+	int ret;
+	ret = strict_strtoul(kcal_g, 0, &kcal);
+	if (ret) {
+		printk(KERN_INFO "[furnace]: kcal_g='%lu'\n", kcal);
+		return 1;
+	}
+
+	kcal_profile_g = kcal;
+
+	return 0;
+}
+__setup("kcal_g=", mdss_panel_read_kcal_g);
+
+static int __init mdss_panel_read_kcal_b(char *kcal_b)
+{
+	unsigned long kcal;
+	int ret;
+	ret = strict_strtoul(kcal_b, 0, &kcal);
+	if (ret) {
+		printk(KERN_INFO "[furnace]: kcal_b='%lu'\n", kcal);
+		return 1;
+	}
+
+	kcal_profile_b = kcal;
+
+	return 0;
+}
+__setup("kcal_b=", mdss_panel_read_kcal_b);
+
+/* END Furnace Gamma - RGB Profiling */
+
 static bool mdss_panel_flip_ud = false;
 static int mdss_panel_id = PANEL_QCOM;
 
@@ -346,6 +435,8 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 
 	if (local_pdata->on_cmds.cmd_cnt)
 		mdss_dsi_panel_cmds_send(ctrl, &local_pdata->on_cmds);
+
+	display_init = 1;
 
 	pr_info("%s\n", __func__);
 	return 0;
