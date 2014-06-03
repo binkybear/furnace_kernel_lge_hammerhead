@@ -31,7 +31,7 @@ if [ -f ozip/boot/"$kerneltype" ]; then
 			export ARCH=arm
 			export CROSS_COMPILE=$toolchain/"$toolchain2"
 			echo "  CLEAN   ozip"
-			rm -rf ozip/boot.img
+			rm -rf ozip/boot/{"$kerneltype",ramdisk.gz}
 			rm -rf arch/arm/boot/"$kerneltype"
 			mkdir -p ozip/system/lib/modules
 			make clean && make mrproper
@@ -74,7 +74,7 @@ else
 			if [ -f arch/arm/boot/"$kerneltype" ]; then
 				echo "  CLEAN   ozip"
 			fi
-			rm -rf ozip/boot.img
+			rm -rf ozip/boot/{"$kerneltype",ramdisk.gz}
 			rm -rf arch/arm/boot/"$kerneltype"
 			mkdir -p ozip/system/lib/modules
 			make clean && make mrproper
