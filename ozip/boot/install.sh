@@ -4,11 +4,17 @@ gamma="stock"
 kcal_r=255
 kcal_g=255
 kcal_b=255
+if [ -d /sdcard/furnace ]; then
+	echo "[furnace] previous installation found - cleaning" | tee /dev/kmsg
+	rm -rf /sdcard/furnace/furnace.cfg
+fi
+mkdir -p /sdcard/furnace
 if [ -f /tmp/furnace.cfg ]; then
 	gamma=$(awk 'NR == 14' /tmp/furnace.cfg | cut -d "=" -f2)
 	kcal_r=$(awk 'NR == 19' /tmp/furnace.cfg | cut -d "=" -f2)
 	kcal_g=$(awk 'NR == 20' /tmp/furnace.cfg | cut -d "=" -f2)
 	kcal_b=$(awk 'NR == 21' /tmp/furnace.cfg | cut -d "=" -f2)
+	mv /tmp/furnace.cfg /sdcard/furnace/furnace.cfg
 else
 	echo "[furnace] furnace.cfg not found - using stock values" | tee /dev/kmsg
 fi
