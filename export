@@ -4,12 +4,14 @@
 # If you are using a non-appended dt.image, you will need to add "--dt path/to/dt.img" and
 # the appropriate lines for dtbTool to compile it, if not prebuilt.
 build=/home/savoca/downloads/furnace/hammerhead/aosp/
+localbuild=/home/savoca/dev/output
 kernel="furnace"
 version="1.2.2"
 rom="aosp"
 variant="hammerhead"
 ramdisk=ramdisk
 toolchain=/home/savoca/storage/toolchains/android-toolchain-eabi-4.8/bin/
+localtoolchain=/home/savoca/toolchains/android-toolchain-eabi-4.8/bin/
 toolchain2="arm-eabi-"
 config="hammerhead_defconfig"
 kerneltype="zImage-dtb"
@@ -19,6 +21,11 @@ base=0x00000000
 ramdisk_offset=0x02900000
 tags_offset=0x02700000
 cmdline="console=ttyHSL0,115200,n8 androidboot.hardware=hammerhead user_debug=31 maxcpus=4 msm_watchdog_v2.enable=1"
+
+if [ "$1" == "local" ]; then
+	build=$localbuild
+	toolchain=$localtoolchain
+fi
 
 rm -rf out
 mkdir out
