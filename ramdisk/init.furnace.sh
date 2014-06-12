@@ -27,6 +27,8 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+# The Redundancy Department of Redundance Inc. needs to pay this file a visit.
+
 # Enable s2s default
 if [ -e /sys/android_touch/sweep2wake ]; then
 	echo "2" > /sys/android_touch/sweep2wake
@@ -45,10 +47,10 @@ fi
 
 if [ -e /sdcard/furnace/furnace.cfg ]; then
 	echo "[furnace] furnace.cfg found - using config values" | tee /dev/kmsg
-	sd_gamma=`awk 'NR == 14' /sdcard/furnace/furnace.cfg | cut -d "=" -f2`
-	sd_r=`awk 'NR == 19' /sdcard/furnace/furnace.cfg | cut -d "=" -f2`
-	sd_g=`awk 'NR == 20' /sdcard/furnace/furnace.cfg | cut -d "=" -f2`
-	sd_b=`awk 'NR == 21' /sdcard/furnace/furnace.cfg | cut -d "=" -f2`
+	sd_gamma=`awk 'NR == 1' /sdcard/furnace/furnace.cfg | cut -d "=" -f2`
+	sd_r=`awk 'NR == 2' /sdcard/furnace/furnace.cfg | cut -d "=" -f2`
+	sd_g=`awk 'NR == 3' /sdcard/furnace/furnace.cfg | cut -d "=" -f2`
+	sd_b=`awk 'NR == 4' /sdcard/furnace/furnace.cfg | cut -d "=" -f2`
 else
 	echo "[furnace] furnace.cfg not found - using cmdline values" | tee /dev/kmsg
 	if [ -e /sys/module/mdss_dsi/parameters/kcal_profile_r ]; then
@@ -56,32 +58,16 @@ else
 		sd_r=`cat /sys/module/mdss_dsi/parameters/kcal_profile_r`
 		sd_g=`cat /sys/module/mdss_dsi/parameters/kcal_profile_g`
 		sd_b=`cat /sys/module/mdss_dsi/parameters/kcal_profile_b`
-	else
-		echo "[furnace] kcal_profiles not found - setting fallback mode" | tee /dev/kmsg
-		echo "255 255 255" > /sys/devices/platform/kcal_ctrl.0/kcal
-		echo "1" > /sys/devices/platform/kcal_ctrl.0/kcal_ctrl
 	fi
 fi
 # Set RGB KCAL
 if [ -e /sys/devices/platform/kcal_ctrl.0/kcal ]; then
-	if [ -e /sys/module/mdss_dsi/parameters/kcal_profile_r ]; then
-		kcal_r=`cat /sys/module/mdss_dsi/parameters/kcal_profile_r`
-		kcal_g=`cat /sys/module/mdss_dsi/parameters/kcal_profile_g`
-		kcal_b=`cat /sys/module/mdss_dsi/parameters/kcal_profile_b`
-		sd_kcal="$sd_r $sd_g $sd_b"
-		kcal="$kcal_r $kcal_g $kcal_b"
-		if [ "$sd_kcal" == "$kcal" ]; then
-			echo "[furnace] config matches cmdline - using cmdline" | /dev/kmsg
-		else
-			echo "[furnace] config does not match cmdline - using config" | /dev/kmsg
-			kcal=$sd_kcal
-		fi
-		echo "$kcal" > /sys/devices/platform/kcal_ctrl.0/kcal
-		echo "1" > /sys/devices/platform/kcal_ctrl.0/kcal_ctrl
-		echo "[furnace] RGB KCAL cmdline: red=[$kcal_r], green=[$kcal_g], blue=[$kcal_b]" | tee /dev/kmsg
-	else
-		echo "[furnace] Failed to set RGB KCAL" | tee /dev/kmsg
-	fi
+	kcal="$sd_r $sd_g $sd_b"
+	echo "$kcal" > /sys/devices/platform/kcal_ctrl.0/kcal
+	echo "1" > /sys/devices/platform/kcal_ctrl.0/kcal_ctrl
+	echo "[furnace] RGB KCAL: red=[$sd_r], green=[$sd_g], blue=[$sd_b]" | tee /dev/kmsg
+else
+	echo "[furnace] Failed to set RGB KCAL" | tee /dev/kmsg
 fi
 
 # Gamma Presets
@@ -163,101 +149,43 @@ function set_stock {
 }
 
 # Fallback Gamma
-function set_gamma_fallback {
-	if [ -e /sys/module/dsi_panel/kgamma_w ]; then
-		if [ -e /sys/module/mdss_dsi/parameters/gamma_profile ]; then
-			fallback_gamma=`cat /sys/module/mdss_dsi/parameters/gamma_profile`
-			if [ $fallback_gamma == 1 ]; then
-				fallback_name="TrueRGB"
-				set_TrueRGB
-			elif [ $fallback_gamma == 2 ]; then
-				fallback_name="Yorici_v3"
-				set_Yorici_v3
-			elif [ $fallback_gamma == 3 ]; then
-				fallback_name="faux123"
-				set_faux123
-			elif [ $fallback_gamma == 4 ]; then
-				fallback_name="perfect"
-				set_perfect
-			elif [ $fallback_gamma == 5 ]; then
-				fallback_name="vomer"
-				set_vomer
-			elif [ $fallback_gamma == 6 ]; then
-				fallback_name="TGM"
-				set_TGM
-			else
-				fallback_name="stock"
-				set_stock
-			fi
-			echo "[furnace] fallback gamma set: $fallback_name" | tee /dev/kmsg
-		fi
+function set_fallback {
+	echo "[furnace] config missing - setting cmdline gamma" | tee /dev/kmsg
+	gamma=`cat /sys/module/mdss_dsi/parameters/gamma_profile`
+	if [ $gamma == 1 ]; then
+		set_TrueRGB
+	elif [ $gamma == 2 ]; then
+		set_Yorici_v3
+	elif [ $gamma == 3 ]; then
+		set_faux123
+	elif [ $gamma == 4 ]; then
+		set_perfect
+	elif [ $gamma == 5 ]; then
+		set_vomer
+	elif [ $gamma == 6 ]; then
+		set_TGM
+	else
+		set_stock
 	fi
 }
 
 # Set Gamma
 if [ -e /sys/module/dsi_panel/kgamma_w ]; then
-	if [ -e /sys/module/mdss_dsi/parameters/gamma_profile ]; then
-		gamma=`cat /sys/module/mdss_dsi/parameters/gamma_profile`
-		if [ $gamma == 1 ]; then
-			gamma_name="TrueRGB"
-		elif [ $gamma == 2 ]; then
-			gamma_name="Yorici_v3"
-		elif [ $gamma == 3 ]; then
-			gamma_name="faux123"
-		elif [ $gamma == 4 ]; then
-			gamma_name="perfect"
-		elif [ $gamma == 5 ]; then
-			gamma_name="vomer"
-		elif [ $gamma == 6 ]; then
-			gamma_name="TGM"
-		else
-			gamma_name="stock"
-		fi
-		if [ "$sd_gamma" == "$gamma_name" ]; then
-			echo "[furnace] gamma config matches cmdline - using cmdline" | tee /dev/kmsg
-			if [ $gamma == 1 ]; then
-				set_TrueRGB
-			elif [ $gamma == 2 ]; then
-				set_Yorici_v3
-			elif [ $gamma == 3 ]; then
-				set_faux123
-			elif [ $gamma == 4 ]; then
-				set_perfect
-			elif [ $gamma == 5 ]; then
-				set_vomer
-			elif [ $gamma == 6 ]; then
-				set_TGM
-			else
-				set_stock
-			fi
-		else
-			echo "[furnace] gamma config does not match cmdline - using config" | tee /dev/kmsg
-			if [ "$sd_gamma" == "TrueRGB" ]; then
-				set_TrueRGB
-			elif [ "$sd_gamma" == "Yorici_v3" ]; then
-				set_Yorici_v3
-			elif [ "$sd_gamma" == "faux123" ]; then
-				set_faux123
-			elif [ "$sd_gamma" == "perfect" ]; then
-				set_perfect
-			elif [ "$sd_gamma" == "vomer" ]; then
-				set_vomer
-			elif [ "$sd_gamma" == "TGM" ]; then
-				set_TGM
-			elif [ "$sd_gamma" == "stock" ]; then
-				set_stock
-			else
-				if [ -e /sdcard/furnace/furnace.cfg ]; then
-					echo "[furnace] config detected - however gamma was not set" | tee /dev/kmsg
-					echo "[furnace] applying fallback gamma profile" | tee /dev/kmsg
-					set_gamma_fallback
-				else
-					echo "[furnace] config not found - using cmdline for fallback profile " | tee /dev/kmsg
-					set_gamma_fallback
-				fi
-			fi
-		fi
+	if [ "$sd_gamma" == "TrueRGB" ]; then
+		set_TrueRGB
+	elif [ "$sd_gamma" == "Yorici_v3" ]; then
+		set_Yorici_v3
+	elif [ "sd_gamma" == "faux123" ]; then
+		set_faux123
+	elif [ "sd_gamma" == "perfect" ]; then
+		set_perfect
+	elif [ "sd_gamma" == "vomer" ]; then
+		set_vomer
+	elif [ "sd_gamma" == "TGM" ]; then
+		set_TGM
+	elif [ "sd_gamma" == "stock" ]; then
+		set_stock
 	else
-		echo "[furnace] Failed to set gamma values" | tee /dev/kmsg
+		set_fallback
 	fi
 fi

@@ -10,10 +10,10 @@ if [ -d /sdcard/furnace ]; then
 fi
 mkdir -p /sdcard/furnace
 if [ -f /tmp/furnace.cfg ]; then
-	gamma=$(awk 'NR == 14' /tmp/furnace.cfg | cut -d "=" -f2)
-	kcal_r=$(awk 'NR == 19' /tmp/furnace.cfg | cut -d "=" -f2)
-	kcal_g=$(awk 'NR == 20' /tmp/furnace.cfg | cut -d "=" -f2)
-	kcal_b=$(awk 'NR == 21' /tmp/furnace.cfg | cut -d "=" -f2)
+	gamma=$(awk 'NR == 1' /tmp/furnace.cfg | cut -d "=" -f2)
+	kcal_r=$(awk 'NR == 2' /tmp/furnace.cfg | cut -d "=" -f2)
+	kcal_g=$(awk 'NR == 3' /tmp/furnace.cfg | cut -d "=" -f2)
+	kcal_b=$(awk 'NR == 4' /tmp/furnace.cfg | cut -d "=" -f2)
 	mv /tmp/furnace.cfg /sdcard/furnace/furnace.cfg
 else
 	echo "[furnace] furnace.cfg not found - using stock values" | tee /dev/kmsg
