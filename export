@@ -27,6 +27,18 @@ if [ "$1" == "local" ]; then
 	toolchain=$localtoolchain
 fi
 
+function cleanme {
+	export ARCH=arm
+	export CROSS_COMPILE=$toolchain/"$toolchain2"
+	if [ -f arch/arm/boot/"$kerneltype" ]; then
+		echo "  CLEAN   ozip"
+	fi
+	rm -rf ozip/boot/{"$kerneltype",ramdisk.gz}
+	rm -rf arch/arm/boot/"$kerneltype"
+	mkdir -p ozip/system/lib/modules
+	make clean && make mrproper
+}
+
 rm -rf out
 mkdir out
 mkdir out/tmp
@@ -35,13 +47,7 @@ if [ -f ozip/boot/"$kerneltype" ]; then
 	read -p "Previous build found, clean working directory..(y/n)? : " cchoice
 	case "$cchoice" in
 		y|Y )
-			export ARCH=arm
-			export CROSS_COMPILE=$toolchain/"$toolchain2"
-			echo "  CLEAN   ozip"
-			rm -rf ozip/boot/{"$kerneltype",ramdisk.gz}
-			rm -rf arch/arm/boot/"$kerneltype"
-			mkdir -p ozip/system/lib/modules
-			make clean && make mrproper
+			cleanme
 			echo "Working directory cleaned...";;
 		n|N )
 			exit 0;;
@@ -76,15 +82,7 @@ else
 	read -p "Clean working directory..(y/n)? : " achoice
 	case "$achoice" in
 		y|Y )
-			export ARCH=arm
-			export CROSS_COMPILE=$toolchain/"$toolchain2"
-			if [ -f arch/arm/boot/"$kerneltype" ]; then
-				echo "  CLEAN   ozip"
-			fi
-			rm -rf ozip/boot/{"$kerneltype",ramdisk.gz}
-			rm -rf arch/arm/boot/"$kerneltype"
-			mkdir -p ozip/system/lib/modules
-			make clean && make mrproper
+			cleanme
 			echo "Working directory cleaned...";;
 		n|N )
 			exit 0;;
