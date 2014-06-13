@@ -171,19 +171,19 @@ function set_fallback {
 
 # Set Gamma
 if [ -e /sys/module/dsi_panel/kgamma_w ]; then
-	if [ "$sd_gamma" == "TrueRGB" ]; then
+	if [ "$sd_gamma" = "TrueRGB" ]; then
 		set_TrueRGB
-	elif [ "$sd_gamma" == "Yorici_v3" ]; then
+	elif [ "$sd_gamma" = "Yorici_v3" ]; then
 		set_Yorici_v3
-	elif [ "sd_gamma" == "faux123" ]; then
+	elif [ "$sd_gamma" = "faux123" ]; then
 		set_faux123
-	elif [ "sd_gamma" == "perfect" ]; then
+	elif [ "$sd_gamma" = "perfect" ]; then
 		set_perfect
-	elif [ "sd_gamma" == "vomer" ]; then
+	elif [ "$sd_gamma" = "vomer" ]; then
 		set_vomer
-	elif [ "sd_gamma" == "TGM" ]; then
+	elif [ "$sd_gamma" = "TGM" ]; then
 		set_TGM
-	elif [ "sd_gamma" == "stock" ]; then
+	elif [ "$sd_gamma" = "stock" ]; then
 		set_stock
 	else
 		set_fallback
