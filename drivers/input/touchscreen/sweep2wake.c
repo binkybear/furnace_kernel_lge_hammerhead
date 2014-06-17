@@ -44,6 +44,7 @@
 #define DRIVER_DESCRIPTION "Sweep2wake for almost any device"
 #define DRIVER_VERSION "1.5"
 #define LOGTAG "[sweep2wake]: "
+#define furntag "[furnace] "
 
 MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_DESCRIPTION(DRIVER_DESCRIPTION);
@@ -85,6 +86,15 @@ static struct input_dev * sweep2wake_pwrdev;
 static DEFINE_MUTEX(pwrkeyworklock);
 static struct workqueue_struct *s2w_input_wq;
 static struct work_struct s2w_input_work;
+
+int s2d_enabled = 0;
+module_param(s2d_enabled, int, 0644);
+int lut_trigger = 0;
+module_param(lut_trigger, int, 0644);
+int down_kcal = 50;
+module_param(down_kcal, int, 0664);
+int up_kcal = 50;
+module_param(up_kcal, int, 0644);
 
 /* Read cmdline for s2w */
 static int __init read_s2w_cmdline(char *s2w)
@@ -146,6 +156,10 @@ static void detect_sweep2wake(int x, int y, bool st)
         pr_info(LOGTAG"x,y(%4d,%4d) single:%s\n",
                 x, y, (single_touch) ? "true" : "false");
 #endif
+
+	if ((s2w_switch > 0) && (s2d_enabled == 1))
+		s2d_enabled = 0;
+
 	// s2w: left->right
 	if ((single_touch) && (scr_suspended == true) && (s2w_switch == 1)) {
 		prevx = 0;
@@ -204,7 +218,7 @@ static void detect_sweep2wake(int x, int y, bool st)
 			}
 		}
 	// s2s: right->left
-	} else if ((single_touch) && (scr_suspended == false) && (s2w_switch > 0)) {
+	} else if ((single_touch) && (scr_suspended == false) && (s2w_switch > 0) && (s2d_enabled == 0)) {
 		scr_on_touch=true;
 		prevx = (S2W_X_MAX - S2W_X_FINAL);
 		nextx = S2W_X_B2;
@@ -255,6 +269,68 @@ static void detect_sweep2wake(int x, int y, bool st)
 						if (exec_count) {
 							pr_info(LOGTAG"OFF\n");
 							sweep2wake_pwrtrigger();
+							exec_count = false;
+						}
+					}
+				}
+			}
+		}
+	// s2d: right->left
+	} else if ((single_touch) && (scr_suspended == false) && (s2d_enabled == 1)) {
+		scr_on_touch=true;
+		prevx = (S2W_X_MAX - S2W_X_FINAL);
+		nextx = S2W_X_B2;
+		if ((barrier[0] == true) ||
+		   ((x < prevx) &&
+		    (x > nextx) &&
+		    (y > S2W_Y_LIMIT))) {
+			prevx = nextx;
+			nextx = S2W_X_B1;
+			barrier[0] = true;
+			if ((barrier[1] == true) ||
+			   ((x < prevx) &&
+			    (x > nextx) &&
+			    (y > S2W_Y_LIMIT))) {
+				prevx = nextx;
+				barrier[1] = true;
+				if ((x < prevx) &&
+				    (y > S2W_Y_LIMIT)) {
+					if (x < S2W_X_FINAL) {
+						if (exec_count) {
+							pr_info(furntag"dimmer!\n");
+							lut_trigger = 1;
+							update_preset_lcdc_lut();
+							lut_trigger = 0;
+							exec_count = false;
+						}
+					}
+				}
+			}
+		}
+		// s2d: left->right
+		r_prevx = S2W_X_B0;
+		r_nextx = S2W_X_B3;
+		if ((r_barrier[0] == true) ||
+		   ((x > r_prevx) &&
+		    (x < r_nextx) &&
+		    (y > S2W_Y_LIMIT))) {
+			r_prevx = r_nextx;
+			r_nextx = S2W_X_B4;
+			r_barrier[0] = true;
+			if ((r_barrier[1] == true) ||
+			   ((x > r_prevx) &&
+			    (x < r_nextx) &&
+			    (y > S2W_Y_LIMIT))) {
+				r_prevx = r_nextx;
+				r_barrier[1] = true;
+				if ((x > r_prevx) &&
+				    (y > S2W_Y_LIMIT)) {
+					if (x > S2W_X_B5) {
+						if (exec_count) {
+							pr_info(furntag"brighter!\n");
+							lut_trigger = 2;
+							update_preset_lcdc_lut();
+							lut_trigger = 0;
 							exec_count = false;
 						}
 					}

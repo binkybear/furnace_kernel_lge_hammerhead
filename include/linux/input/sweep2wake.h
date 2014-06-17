@@ -23,4 +23,8 @@
 
 extern int s2w_switch, s2w_s2sonly;
 
+extern int s2d_enabled, lut_trigger;
+extern int down_kcal, up_kcal;
+extern int update_preset_lcdc_lut(void);
+
 #endif	/* _LINUX_SWEEP2WAKE_H */
