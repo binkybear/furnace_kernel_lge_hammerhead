@@ -29,12 +29,19 @@
 
 # The Redundancy Department of Redundance Inc. needs to pay this file a visit.
 
-# Enable s2s default
+# Sweep2Dim default
 if [ -e /sys/android_touch/sweep2wake ]; then
-	echo "2" > /sys/android_touch/sweep2wake
-	echo "[furnace] sweep2sleep enabled" | tee /dev/kmsg
+	if [ -e /sys/android_touch/sweep2dim ]; then
+		echo "0" > /sys/android_touch/sweep2wake
+		echo "1" > /sys/android_touch/sweep2dim
+		echo "85" > /sys/module/sweep2wake/parameters/down_kcal
+		echo "85" > /sys/module/sweep2wake/parameters/up_kcal
+		echo "[furnace] sweep2dim configured!" | tee /dev/kmsg
+	else
+		echo "[furnace] sweep2dim not found" | tee /dev/kmsg
+	fi
 else
-	echo "[furnace] Failed to set s2s" | tee /dev/kmsg
+	echo "[furnace] sweep2wake not found" | tee /dev/kmsg
 fi
 
 # Enable powersuspend
