@@ -33,7 +33,7 @@ function cleanme {
 	if [ -f arch/arm/boot/"$kerneltype" ]; then
 		echo "  CLEAN   ozip"
 	fi
-	rm -rf ozip/boot/{"$kerneltype",ramdisk.gz}
+	rm -rf ozip/boot/{"$kerneltype",ramdisk.lz4}
 	rm -rf arch/arm/boot/"$kerneltype"
 	mkdir -p ozip/system/lib/modules
 	make clean && make mrproper
@@ -104,7 +104,7 @@ fi
 
 echo "Making ramdisk..."
 if [ -d $ramdisk ]; then
-	mkbootfs $ramdisk | gzip > ozip/boot/ramdisk.gz
+	mkbootfs $ramdisk | lz4demo -c stdin ozip/boot/ramdisk.lz4
 else
 	echo "No ramdisk found..."
 	exit 0;
@@ -115,6 +115,7 @@ cd ozip
 zip -r ../"$kernel"-$version-"$rom"_"$variant".zip .
 mv ../"$kernel"-$version-"$rom"_"$variant".zip $build
 cd ..
-rm -rf out ramdisk.gz ozip/system
+rm -rf out ozip/system
 echo "Done..."
+echo "Output zip: $build/$kernel-$version-$(echo $rom)_$variant.zip"
 # Export script by Savoca

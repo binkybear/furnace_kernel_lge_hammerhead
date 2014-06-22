@@ -23,7 +23,7 @@ echo "console=ttyHSL0,115200,n8 androidboot.hardware=hammerhead user_debug=31 ma
 echo "[furnace] cmdline: $(cat /tmp/cmdline.cfg)"
 
 chmod 775 /tmp/boot/mkbootimg
-/tmp/boot/mkbootimg --kernel /tmp/boot/zImage-dtb --ramdisk /tmp/boot/ramdisk.gz --cmdline "$(cat /tmp/cmdline.cfg)" --base 0x00000000 --pagesize 2048 --ramdisk_offset 0x02900000 --tags_offset 0x02700000 --output /tmp/boot.img
+/tmp/boot/mkbootimg --kernel /tmp/boot/zImage-dtb --ramdisk /tmp/boot/ramdisk.lz4 --cmdline "$(cat /tmp/cmdline.cfg)" --base 0x00000000 --pagesize 2048 --ramdisk_offset 0x02900000 --tags_offset 0x02700000 --output /tmp/boot.img
 
 if [ -f /tmp/boot.img ]; then
 	echo "[furnace] boot.img created" | tee /dev/kmsg

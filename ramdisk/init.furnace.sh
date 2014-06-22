@@ -44,6 +44,14 @@ else
 	echo "[furnace] sweep2wake not found" | tee /dev/kmsg
 fi
 
+# Set scheduler
+if [ -e /sys/block/mmcblk0/queue/scheduler ]; then
+	echo "deadline" > /sys/block/mmcblk0/queue/scheduler
+	echo "[furnace] deadline iosched set!" | tee /dev/kmsg
+else
+	echo "[furnace] wtf scheduler" | tee /dev/kmsg
+fi
+
 # Enable powersuspend
 if [ -e /sys/kernel/power_suspend/power_suspend_mode ]; then
 	echo "1" > /sys/kernel/power_suspend/power_suspend_mode
