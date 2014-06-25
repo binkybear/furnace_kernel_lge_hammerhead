@@ -29,6 +29,14 @@
 
 # The Redundancy Department of Redundance Inc. needs to pay this file a visit.
 
+# Enhanced Backlight
+if [ -e /sys/module/lm3630_bl/parameters/gamma_correction ]; then
+	echo "2" > /sys/module/lm3630_bl/parameters/gamma_correction
+	echo "[furnace] Enhanced backlight enabled!" | tee /dev/kmsg
+else
+	echo "[furnace] gamma_correction not found!" | tee /dev/kmsg
+fi
+
 # Sweep2Dim default
 if [ -e /sys/android_touch/sweep2wake ]; then
 	if [ -e /sys/android_touch/sweep2dim ]; then
