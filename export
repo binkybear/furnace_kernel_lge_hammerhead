@@ -6,7 +6,7 @@
 build=/home/savoca/downloads/furnace/hammerhead/aosp/
 localbuild=/home/savoca/dev/output
 kernel="furnace"
-version="1.3.5"
+version="1.3.5-L"
 rom="aosp"
 variant="hammerhead"
 ramdisk=ramdisk
@@ -25,6 +25,10 @@ cmdline="console=ttyHSL0,115200,n8 androidboot.hardware=hammerhead user_debug=31
 if [ "$1" == "local" ]; then
 	build=$localbuild
 	toolchain=$localtoolchain
+fi
+
+if [ "$2" == "L" ]; then
+	ramdisk=ramdisk-L
 fi
 
 function cleanme {
