@@ -70,10 +70,10 @@ fi
 
 if [ -e /sdcard/furnace/furnace.cfg ]; then
 	echo "[furnace] furnace.cfg found - using config values" | tee /dev/kmsg
-	sd_gamma=`awk 'NR == 1' /sdcard/furnace/furnace.cfg | cut -d "=" -f2`
-	sd_r=`awk 'NR == 2' /sdcard/furnace/furnace.cfg | cut -d "=" -f2`
-	sd_g=`awk 'NR == 3' /sdcard/furnace/furnace.cfg | cut -d "=" -f2`
-	sd_b=`awk 'NR == 4' /sdcard/furnace/furnace.cfg | cut -d "=" -f2`
+	sd_gamma=`awk 'NR == 1' /sdcard/furnace/furnace.cfg | cut -d "=" -f2` || sd_gamma="stock"
+	sd_r=`awk 'NR == 2' /sdcard/furnace/furnace.cfg | cut -d "=" -f2` || sd_r=255
+	sd_g=`awk 'NR == 3' /sdcard/furnace/furnace.cfg | cut -d "=" -f2` || sd_g=255
+	sd_b=`awk 'NR == 4' /sdcard/furnace/furnace.cfg | cut -d "=" -f2` || sd_b=255
 else
 	echo "[furnace] furnace.cfg not found - using cmdline values" | tee /dev/kmsg
 	if [ -e /sys/module/mdss_dsi/parameters/kcal_profile_r ]; then
