@@ -1379,13 +1379,13 @@ static void msm_otg_start_host(struct usb_otg *otg, int on)
 
 	if (on) {
 		dev_dbg(otg->phy->dev, "host on\n");
-
+/*
 		if (usbhost_charge_mode)
 			smb345_otg_status(false);
 		else
 			smb345_otg_status(true);
 		otg_host_on = 1;
-
+*/
 		// Reset to apply new parameter for host.
 		msm_otg_reset(otg->phy);
 
@@ -3273,7 +3273,7 @@ static void msm_otg_set_vbus_state(int online)
 			cancel_delayed_work_sync(&motg->chg_work);
 			motg->chg_state = USB_CHG_STATE_UNDEFINED;
 			motg->chg_type = USB_INVALID_CHARGER;
-			asus_chg_set_chg_mode(USB_INVALID_CHARGER);
+			//asus_chg_set_chg_mode(USB_INVALID_CHARGER);
 			msm_otg_notify_charger(motg, 0);
 		}
 	}
@@ -4526,6 +4526,7 @@ static const struct dev_pm_ops msm_otg_dev_pm_ops = {
 };
 #endif
 
+/*
 static void id_pin_irq_work_function(struct work_struct *work)
 {
 	struct msm_otg *motg = container_of(work, struct msm_otg, id_pin_irq_work.work);
@@ -4554,6 +4555,7 @@ static void id_pin_irq_work_function(struct work_struct *work)
 		}
 	}
 }
+*/
 
 static struct of_device_id msm_otg_dt_match[] = {
 	{	.compatible = "qcom,hsusb-otg",
